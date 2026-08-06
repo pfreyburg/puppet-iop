@@ -105,7 +105,7 @@ class iop::core_host_inventory (
   #
   # Staleness intervals are hardcoded HBI defaults (29h, 7d, 30d).
   # Per-org custom staleness from hbi.staleness is not supported.
-  $remote_view_expected_columns = "ARRAY['id','account','display_name','created','updated','stale_timestamp','stale_warning_timestamp','culled_timestamp','tags','system_profile','insights_id','reporter','per_reporter_staleness','org_id','groups','last_check_in']"
+  $remote_view_expected_columns = "ARRAY['id','account','display_name','created','updated','stale_timestamp','stale_warning_timestamp','culled_timestamp','tags','system_profile','insights_id','reporter','per_reporter_staleness','org_id','groups']"
 
   $remote_view_command = @("EOM")
     CREATE OR REPLACE VIEW "inventory"."hosts" AS SELECT
@@ -114,20 +114,18 @@ class iop::core_host_inventory (
       h.display_name,
       h.created_on as created,
       h.modified_on as updated,
-      h.last_check_in + INTERVAL '29 hours' AS stale_timestamp,
-      h.last_check_in + INTERVAL '7 days' AS stale_warning_timestamp,
-      h.last_check_in + INTERVAL '30 days' AS culled_timestamp,
+      h.stale_timestamp,
+      h.stale_warning_timestamp,
+      h.deletion_timestamp AS culled_timestamp,
       h.tags_alt as tags,
       h.system_profile_facts as system_profile,
-      h.insights_id,
+      (h.canonical_facts ->> 'insights_id')::uuid as insights_id,
       h.reporter,
       h.per_reporter_staleness,
       h.org_id,
-      h.groups,
-      h.last_check_in
+      h.groups
     FROM hbi.hosts h
-    LEFT JOIN hbi.system_profiles_static sps ON sps.org_id = h.org_id AND sps.host_id = h.id
-    WHERE h.insights_id != '00000000-0000-0000-0000-000000000000';
+    WHERE (h.canonical_facts->'insights_id' IS NOT NULL);
     | EOM
 
   postgresql_psql { 'create_or_replace_remote_view_inventory_hosts':
