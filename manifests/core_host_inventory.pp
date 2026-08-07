@@ -123,7 +123,8 @@ class iop::core_host_inventory (
       h.reporter,
       h.per_reporter_staleness,
       h.org_id,
-      h.groups
+      h.groups,
+      h.last_check_in
     FROM hbi.hosts h
     WHERE (h.canonical_facts->'insights_id' IS NOT NULL);
     | EOM
