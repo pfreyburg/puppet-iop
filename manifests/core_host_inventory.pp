@@ -103,9 +103,8 @@ class iop::core_host_inventory (
   # TODO(RHINENG-26911): remove this view and the FDW define once Cyndi
   # decommission completes across all IoP services.
   #
-  # Staleness intervals are hardcoded HBI defaults (29h, 7d, 30d).
   # Per-org custom staleness from hbi.staleness is not supported.
-  $remote_view_expected_columns = "ARRAY['id','account','display_name','created','updated','stale_timestamp','stale_warning_timestamp','culled_timestamp','tags','system_profile','insights_id','reporter','per_reporter_staleness','org_id','groups']"
+  $remote_view_expected_columns = "ARRAY['id','account','display_name','created','updated','stale_timestamp','stale_warning_timestamp','culled_timestamp','tags','system_profile','insights_id','reporter','per_reporter_staleness','org_id','groups','last_check_in']"
 
   $remote_view_command = @("EOM")
     CREATE OR REPLACE VIEW "inventory"."hosts" AS SELECT
